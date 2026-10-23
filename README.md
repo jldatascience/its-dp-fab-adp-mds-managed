@@ -2,7 +2,7 @@
 
 Dépôt GitHub des items Microsoft Fabric du workspace **ADP MDS**, et de leur configuration de déploiement.
 
-Ce dépôt ne contient **aucun code de déploiement**. Il décrit *quoi* déployer et *où*. La logique (contrôles, publication, vérification, rapport) se trouve dans le dépôt socle commun `its-dp-fab-cicd-common`, appelé par le tag `v1.3.0`.
+Ce dépôt ne contient **aucun code de déploiement**. Il décrit *quoi* déployer et *où*. La logique (contrôles, publication, vérification, rapport) se trouve dans le dépôt socle commun `its-dp-fab-cicd-common`, appelé par le tag `v1.4.0`.
 
 | Rubrique | Valeur |
 |---|---|
@@ -10,7 +10,7 @@ Ce dépôt ne contient **aucun code de déploiement**. Il décrit *quoi* déploy
 | Workspaces | `FR - DP - <ENV> - FAB - ADP - MDS - MANAGED` (DEV, ITG, PPR, PRD) |
 | Branches | `develop` (par défaut) · `release/*` · `main` |
 | Pipelines Azure DevOps | CI : `FabricCI` · CD : à créer depuis `CD.yml` · validation de PR : à créer depuis `PR-Validation.yml` |
-| Socle commun | `its-dp-fab-cicd-common`, tag `v1.3.0` |
+| Socle commun | `its-dp-fab-cicd-common`, tag `v1.4.0` |
 | Statut d'inventaire | `pending` : la CD refuse toute publication tant que l'inventaire n'est pas validé sur la branche réelle |
 
 ## Dépendances
@@ -178,11 +178,9 @@ python ../its-dp-fab-cicd-common/tools/deploy.py validate --repo .
 
 - [ ] Remplacer les marqueurs de `CD.yml` et `PR-Validation.yml` :
   - `__A_RELEVER__` : organisation et service connection GitHub ;
-  - `__A_CONFIRMER_SERVICE_CONNECTION_KEYVAULT_<ENV>__` : une service connection par environnement.
+  - `__A_CONFIRMER_SERVICE_CONNECTION_ARM_<ENV>__` : une service connection Azure Resource Manager distincte par environnement, créée par Ops en fédération d'identité, autorisée à lire les 3 secrets de son environnement dans le coffre unique `frfrkvdevdp0001`.
 - [ ] Déplacer les items sous `fabric/` et passer `repository_directory` à `"../fabric"` **dans la même PR**. Rediriger ensuite la Git Integration du workspace DEV vers le dossier `fabric`.
-- [ ] Lancer `deploy.py validate` sur la branche réelle et lever les deux hypothèses du MODOP :
-  - `pl_sequence_start` → `log_sequence_start` ;
-  - `lh_storage`, cible du raccourci.
-- [ ] Relever les noms des workspaces Framework PPR et PRD.
+- [ ] Lancer `deploy.py validate` sur la branche réelle. Décisions du 22/10/2026 : le lien `pl_sequence_start` → `log_sequence_start` est confirmé ; reste à confirmer `lh_storage`, cible du raccourci.
+- [x] Noms des workspaces Framework PPR et PRD confirmés le 22/10/2026 : `FR - DP - PPR - FAB - Framework - MANAGED`, `FR - DP - PRD - FAB - Framework - MANAGED`.
 - [ ] Passer `inventory_status` à `validated` dans une PR revue.
 - [ ] Vérifier que le Framework a été déployé au moins une fois par la nouvelle CD Framework sur l'environnement visé. Sinon la porte renvoie `GATE_NEVER_DEPLOYED`.
