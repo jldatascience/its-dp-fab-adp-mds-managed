@@ -8,9 +8,12 @@
 # Dépendance de déploiement unique : le Framework (v1.3, R1) — disponibilité vérifiée à chaque stage
 # (pré-vol Fabric + dernier déploiement réussi dans ADO), sans redéploiement du Framework ;
 # aucun ordre vis-à-vis des autres ADP/BDP (R2-R4).
+# ── trigger — pas de declenchement direct (le pipeline CI pousse l'artefact)
 trigger: none
+# ── pr — pas de declenchement sur Pull Request
 pr: none
 
+# ── resources — socle commun (par TAG immuable) + artefact du pipeline CI
 resources:
   repositories:
     - repository: cicd_common
@@ -33,6 +36,7 @@ resources:
             - release/*
             - main
 
+# ── extends — etend le template CD du socle : toute la logique de deploiement y est
 extends:
   template: pipelines/templates/cd-pipeline.yml@cicd_common
   parameters:
@@ -70,3 +74,5 @@ extends:
     # jusqu'à leur désactivation : ne pas le supprimer avant (backlog B33).
     frameworkGate: ado
     frameworkPipelineName: "its-dp-fab-item-framework-managed-cd"   # nom exact de la CD Framework dans ADO (à confirmer)
+
+
