@@ -1,0 +1,127 @@
+# ###########################################################################
+# parameter.yml  —  DEPOT adp-mds (Data Product MDS)  —  SOLUTION TEMPORAIRE (EN DUR, DEV)
+#
+# EN UN CLIN D'OEIL
+#  - adp-mds DEPEND du framework : son orchestrateur pl_master_load appelle des
+#    pipelines qui vivent dans le workspace Framework (reference CROISEE).
+#  - 2 workspaces interviennent donc :
+#      <<WS_FRAMEWORK_DEV>>  = workspace du framework (depot tiers)
+#      <<WS_ADP_MDS_DEV>>    = workspace d'adp-mds lui-meme (workspace courant)
+#  - Version (C) : GUID reels DEV. Prerequis : deployer le framework AVANT,
+#    sinon les GUID d'items framework n'existent pas encore.
+#
+# COMMENT LIRE : find_key = OU / replace_value = PAR QUOI / item_name = DANS QUEL pipeline
+# A FAIRE : remplacer chaque <<...>> par le GUID reel.   TOTAL : 18 regles.
+# ###########################################################################
+
+key_value_replace:
+
+# ===========================================================================
+# pl_master_load — Orchestrateur principal d'adp-mds
+# Role : appelle 4 pipelines du FRAMEWORK (croise) + son propre pl_load_tables (courant).
+# 5 activites -> 10 regles.
+# ===========================================================================
+  - find_key: '$.properties.activities[?(@.name=="pl_get_ws_lh_ids")].typeProperties.workspaceId'
+    replace_value:
+      dev: "<<WS_FRAMEWORK_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_master_load"
+  - find_key: '$.properties.activities[?(@.name=="pl_get_ws_lh_ids")].typeProperties.pipelineId'
+    replace_value:
+      dev: "<<ID_pl_get_ws_lh_ids_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_master_load"
+  # NB : activite 'pl_sequence_start' -> item 'log_sequence_start' (hypothese, A VALIDER au 1er run)
+  - find_key: '$.properties.activities[?(@.name=="pl_sequence_start")].typeProperties.workspaceId'
+    replace_value:
+      dev: "<<WS_FRAMEWORK_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_master_load"
+  - find_key: '$.properties.activities[?(@.name=="pl_sequence_start")].typeProperties.pipelineId'
+    replace_value:
+      dev: "<<ID_log_sequence_start_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_master_load"
+  - find_key: '$.properties.activities[?(@.name=="log_sequence_ok")].typeProperties.workspaceId'
+    replace_value:
+      dev: "<<WS_FRAMEWORK_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_master_load"
+  - find_key: '$.properties.activities[?(@.name=="log_sequence_ok")].typeProperties.pipelineId'
+    replace_value:
+      dev: "<<ID_log_sequence_ok_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_master_load"
+  - find_key: '$.properties.activities[?(@.name=="log_sequence_ko")].typeProperties.workspaceId'
+    replace_value:
+      dev: "<<WS_FRAMEWORK_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_master_load"
+  - find_key: '$.properties.activities[?(@.name=="log_sequence_ko")].typeProperties.pipelineId'
+    replace_value:
+      dev: "<<ID_log_sequence_ko_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_master_load"
+  # pl_load_tables = pipeline d'adp-mds lui-meme -> workspace COURANT
+  - find_key: '$.properties.activities[?(@.name=="pl_load_tables")].typeProperties.workspaceId'
+    replace_value:
+      dev: "<<WS_ADP_MDS_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_master_load"
+  - find_key: '$.properties.activities[?(@.name=="pl_load_tables")].typeProperties.pipelineId'
+    replace_value:
+      dev: "<<ID_pl_load_tables_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_master_load"
+
+# ===========================================================================
+# pl_load_tables — Chargement des tables metier
+# Role : appelle 3x pl_load_object du FRAMEWORK (groupement / mapping grade / profit center).
+# 3 activites -> 6 regles.
+# ===========================================================================
+  - find_key: '$.properties.activities[?(@.name=="pl_load_groupementgup")].typeProperties.workspaceId'
+    replace_value:
+      dev: "<<WS_FRAMEWORK_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_load_tables"
+  - find_key: '$.properties.activities[?(@.name=="pl_load_groupementgup")].typeProperties.pipelineId'
+    replace_value:
+      dev: "<<ID_pl_load_object_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_load_tables"
+  - find_key: '$.properties.activities[?(@.name=="pl_load_mappinggrade")].typeProperties.workspaceId'
+    replace_value:
+      dev: "<<WS_FRAMEWORK_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_load_tables"
+  - find_key: '$.properties.activities[?(@.name=="pl_load_mappinggrade")].typeProperties.pipelineId'
+    replace_value:
+      dev: "<<ID_pl_load_object_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_load_tables"
+  - find_key: '$.properties.activities[?(@.name=="pl_load_profitcenter")].typeProperties.workspaceId'
+    replace_value:
+      dev: "<<WS_FRAMEWORK_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_load_tables"
+  - find_key: '$.properties.activities[?(@.name=="pl_load_profitcenter")].typeProperties.pipelineId'
+    replace_value:
+      dev: "<<ID_pl_load_object_DEV>>"
+    item_type: "DataPipeline"
+    item_name: "pl_load_tables"
+
+# ===========================================================================
+# lh_dso.Lakehouse — Raccourci (shortcut) OneLake 'storage'
+# Role : fait pointer le shortcut vers le lakehouse de stockage du workspace courant.
+# 2 regles. (section 2.2bis du MODOP — A VALIDER au 1er run.)
+# ===========================================================================
+  - find_key: '$[?(@.name=="storage")].target.oneLake.workspaceId'
+    replace_value:
+      dev: "<<WS_ADP_MDS_DEV>>"
+    item_type: "Lakehouse"
+    item_name: "lh_dso"
+  - find_key: '$[?(@.name=="storage")].target.oneLake.itemId'
+    replace_value:
+      dev: "<<ID_lh_storage_DEV>>"
+    item_type: "Lakehouse"
+    item_name: "lh_dso"

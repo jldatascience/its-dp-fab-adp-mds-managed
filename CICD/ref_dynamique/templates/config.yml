@@ -1,0 +1,46 @@
+# ###########################################################################
+# config.yml  —  DEPOT adp-mds  —  SOLUTION TEMPORAIRE (EN DUR, DEV)
+#
+# EN UN CLIN D'OEIL
+#  - Ce fichier dit a fabric-cicd : OU deployer (quel workspace), QUOI deployer
+#    (quels types d'items), QUELS dossiers exclure, et ou trouver parameter.yml.
+#  - Preference retenue : on indique le GUID du workspace (workspace_id) avec
+#    le NOM en commentaire -> cible non ambigue + lisible.
+#    PERIMETRE : DEV uniquement.
+# ###########################################################################
+
+core:
+  workspace_id:
+    dev: "<<WS_ADP_MDS_DEV>>"   # FR - DP - DEV - FAB - ADP - MDS - MANAGED
+    # itg/ppr/prd : a ajouter quand ces workspaces existeront (hors scope equipe Data)
+
+  # ".." tant que les items ne sont pas physiquement sous fabric/ (MODOP section 4, pt 14).
+  repository_directory: ".."
+  # repository_directory: "../fabric"   # a activer dans le MEME commit que le deplacement
+
+  # Types d'items publies (un type absent ici est silencieusement ignore).
+  item_types_in_scope:
+    - VariableLibrary
+    - Lakehouse
+    - Notebook
+    - DataPipeline
+    - Environment
+
+  parameter: "parameter.yml"
+
+# Publication automatique des items par environnement (false = on publie).
+publish:
+  skip:
+    dev: false
+  # Exclut les dossiers hors perimetre (tests, versions depreciees).
+  folder_exclude_regex: "^/To_delete"
+
+# Depublication des items orphelins (true = on NE supprime pas).
+unpublish:
+  skip:
+    dev: false
+
+# Flags requis par folder_exclude_regex (fonctionnalite experimentale).
+features:
+  - enable_experimental_features
+  - enable_exclude_folder

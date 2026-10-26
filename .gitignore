@@ -33,3 +33,15 @@ htmlcov/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# --- Outillage référencement dynamique (CICD/ref_dynamique) : fichiers générés ---
+# __pycache__/ est déjà couvert plus haut. On ignore ici les sorties des scripts.
+CICD/ref_dynamique/inventaire_*.json
+CICD/ref_dynamique/activites_*.csv
+CICD/ref_dynamique/toutes_refs_*.csv
+CICD/ref_dynamique/guids_dev.json
+CICD/ref_dynamique/connexions_gateways.json
+CICD/ref_dynamique/activites_fabric_*.csv
+CICD/ref_dynamique/recoupement_*.csv
+CICD/ref_dynamique/alertes_*.csv
+CICD/ref_dynamique/sortie/
