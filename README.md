@@ -41,7 +41,7 @@ Connexions Fabric requises, déclarées dans `CICD/deployment/dependencies.yml` 
 ```text
 its-dp-fab-adp-mds-managed/                branches develop (défaut) · release/* · main
 │
-├── CHANGES.md                           # changements du dépôt
+├── CHANGELOG.md                         # journal des changements du dépôt (entrées datées)
 ├── README.md                            # ce fichier
 │
 │  ── Déploiement (lu par Azure DevOps, jamais publié dans Fabric) ──
@@ -63,37 +63,10 @@ its-dp-fab-adp-mds-managed/                branches develop (défaut) · release
 │
 │  ── Contenu du workspace ADP MDS (Git Integration DEV + publication fabric-cicd) ──
 └── fabric/
-    ├── pl_master_load.DataPipeline/          # 4 activités → Framework, 1 → pl_load_tables
-    │   ├── .platform
-    │   └── pipeline-content.json
-    ├── pl_load_tables.DataPipeline/          # 3 activités → Framework pl_load_object
-    │   ├── .platform
-    │   └── pipeline-content.json
-    ├── lh_dso.Lakehouse/
-    │   ├── .platform
-    │   ├── lakehouse.metadata.json
-    │   └── shortcuts.metadata.json           # raccourci « storage » → lh_storage
-    ├── lh_storage.Lakehouse/                 # .platform + lakehouse.metadata.json
-    ├── nb_runtime_resources_item_diagnostic.Notebook/
-    │   ├── .platform
-    │   └── notebook-content.py
-    ├── vl_item_config.VariableLibrary/
-    │   ├── .platform
-    │   ├── variables.json
-    │   ├── settings.json
-    │   └── valueSets/
-    │       └── <value set>.json
-    ├── env_dev.Environment/                  # .platform + Setting/Sparkcompute.yml
-    ├── env_spark.Environment/                # idem
-    ├── sm_observability.SemanticModel/       # présent mais NON déployé (exclu volontairement)
-    │   ├── .platform
-    │   ├── definition.pbism
-    │   └── definition/
-    │       └── expressions.tmdl
-    └── To_delete/                            # EXCLU (ex. env-storage.Environment)
+    └── test.md
 ```
 
-Les emplacements exacts des items sous `fabric/` se confirment sur la branche réelle avec `git ls-tree -r --name-only HEAD`.
+Cette arborescence reflète le contenu du dépôt au 29/10/2026 (`find fabric -maxdepth 2 | sort`), et non l'inventaire du MODOP. `fabric/` ne contient pour l'instant que `test.md` : le dossier sera alimenté prochainement avec les items du workspace.
 
 `repository_directory` est résolu **relativement au dossier de `config.yml`** (`CICD/deployment/`), par fabric-cicd 1.4.0 comme par le socle : `"../../fabric"` désigne le dossier `fabric/` à la racine du dépôt.
 
