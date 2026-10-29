@@ -1,4 +1,4 @@
-# deployment/parameter.yml — its-dp-fab-adp-mds-managed
+# CICD/deployment/parameter.yml — its-dp-fab-adp-mds-managed
 # Source : MODOP CI/CD sections 2.2 et 2.2bis (7 références sandbox + 1 référence ADP MDS DEV
 # dans pl_master_load + 1 shortcut lh_dso).
 # Les pipelines du Framework sont résolus PAR NOM dans le workspace Framework de

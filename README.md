@@ -9,7 +9,7 @@ Ce dépôt ne contient **aucun code de déploiement**. Il décrit *quoi* déploy
 | Catégorie | `adp` (Data Product de type ADP) |
 | Workspaces | `FR - DP - <ENV> - FAB - ADP - MDS - MANAGED` (DEV, ITG, PPR, PRD) |
 | Branches | `develop` (par défaut) · `release/*` · `main` |
-| Pipelines Azure DevOps | CI : `FabricCI` · CD : à créer depuis `CD.yml` · validation de PR : à créer depuis `PR-Validation.yml` |
+| Pipelines Azure DevOps | CI : `FabricCI` · CD : à créer depuis `CICD/pipelines/CD.yml` · validation de PR : à créer depuis `CICD/pipelines/PR-Validation.yml` |
 | Socle commun | `its-dp-fab-cicd-common`, tag `v1.4.0` |
 | Statut d'inventaire | `pending` : la CD refuse toute publication tant que l'inventaire n'est pas validé sur la branche réelle |
 
@@ -31,7 +31,7 @@ Ce dépôt ne contient **aucun code de déploiement**. Il décrit *quoi* déploy
 | `log_sequence_start`, `log_sequence_ok`, `log_sequence_ko` | `pl_master_load` |
 | `pl_load_object` | `pl_load_tables` |
 
-Connexions Fabric requises, déclarées dans `deployment/dependencies.yml` et vérifiées au pré-vol :
+Connexions Fabric requises, déclarées dans `CICD/deployment/dependencies.yml` et vérifiées au pré-vol :
 
 - `MDS_<ENV>_DP_FABRIC` (source SQL Server MDS, une par environnement) ;
 - `DP-Fabric-Global-APR` (connexion « Fabric Data Pipelines », nom exact à confirmer).
@@ -41,20 +41,25 @@ Connexions Fabric requises, déclarées dans `deployment/dependencies.yml` et v�
 ```text
 its-dp-fab-adp-mds-managed/                branches develop (défaut) · release/* · main
 │
+├── CHANGES.md                           # changements du dépôt
+├── README.md                            # ce fichier
+│
 │  ── Déploiement (lu par Azure DevOps, jamais publié dans Fabric) ──
-├── CI.yml                           # pipeline ADO FabricCI (template KPMG)
-├── CD.yml                           # pipeline ADO de CD → cd-pipeline.yml@cicd_common
-├── PR-Validation.yml                # check obligatoire des PR → validate-pipeline.yml@cicd_common
-├── CHANGES.md                       # (facultatif) changements du dépôt
-├── README.md                        # ce fichier
-├── deployment/
-│   ├── config.yml                   # workspaces « FR - DP - <ENV> - FAB - ADP - MDS - MANAGED »,
-│   │                                #   repository_directory: "../fabric", types, exclusion To_delete
-│   ├── parameter.yml                # 18 règles : 14 vers le Framework <ENV> (par nom),
-│   │                                #   pl_load_tables, raccourci storage de lh_dso
-│   └── dependencies.yml             # category adp : Framework seul prérequis (5 items, porte ADO),
-│                                    #   data_dependencies, connexions MDS_<ENV>_DP_FABRIC et
-│                                    #   DP-Fabric-Global-APR
+├── CICD/
+│   ├── pipelines/
+│   │   ├── CI.yml                       # pipeline ADO FabricCI (template KPMG)
+│   │   ├── CD.yml                       # pipeline ADO de CD → CICD/pipelines/templates/cd-pipeline.yml@cicd_common
+│   │   └── PR-Validation.yml            # check obligatoire des PR → CICD/pipelines/templates/validate-pipeline.yml@cicd_common
+│   ├── deployment/
+│   │   ├── config.yml                   # workspaces « FR - DP - <ENV> - FAB - ADP - MDS - MANAGED »,
+│   │   │                                #   repository_directory: "../../fabric", types, exclusion To_delete
+│   │   ├── parameter.yml                # 18 règles : 14 vers le Framework <ENV> (par nom),
+│   │   │                                #   pl_load_tables, raccourci storage de lh_dso
+│   │   └── dependencies.yml             # category adp : Framework seul prérequis (5 items, porte ADO),
+│   │                                    #   data_dependencies, connexions MDS_<ENV>_DP_FABRIC et
+│   │                                    #   DP-Fabric-Global-APR
+│   └── ref_dynamique/                   # inventaire des références (01_… à 04_….py, lancés depuis ce dossier)
+│       └── templates/                   #   modèles config.yml / parameter.yml (solution temporaire DEV)
 │
 │  ── Contenu du workspace ADP MDS (Git Integration DEV + publication fabric-cicd) ──
 └── fabric/
@@ -90,7 +95,9 @@ its-dp-fab-adp-mds-managed/                branches develop (défaut) · release
 
 Les emplacements exacts des items sous `fabric/` se confirment sur la branche réelle avec `git ls-tree -r --name-only HEAD`.
 
-## Exclusions (`deployment/config.yml`)
+`repository_directory` est résolu **relativement au dossier de `config.yml`** (`CICD/deployment/`), par fabric-cicd 1.4.0 comme par le socle : `"../../fabric"` désigne le dossier `fabric/` à la racine du dépôt.
+
+## Exclusions (`CICD/deployment/config.yml`)
 
 ```yaml
 item_types_in_scope: [VariableLibrary, Lakehouse, Notebook, DataPipeline, Environment]
@@ -154,32 +161,33 @@ La CD déploie des **définitions d'items** : elle n'exécute aucun pipeline et 
 
 1. Travailler dans le workspace DEV, puis enregistrer sur une branche `feature/*` (Source control de Fabric).
 2. Si un item appelle un nouvel item du Framework :
-   - ajouter la règle correspondante dans `deployment/parameter.yml`, au format `$workspace.FR - DP - <ENV> - FAB - Framework - MANAGED.$items.<Type>.<nom>.$id` ;
-   - déclarer l'item dans `framework.items` de `deployment/dependencies.yml`.
+   - ajouter la règle correspondante dans `CICD/deployment/parameter.yml`, au format `$workspace.FR - DP - <ENV> - FAB - Framework - MANAGED.$items.<Type>.<nom>.$id` ;
+   - déclarer l'item dans `framework.items` de `CICD/deployment/dependencies.yml`.
 3. Ne jamais référencer le workspace d'un autre Data Product (ADP, BDP, UCS) dans `parameter.yml` : la CI le refuse (`DEPS_CROSS_WORKSPACE_FORBIDDEN`). Une lecture de données se fait à l'exécution et se déclare, pour information, dans `data_dependencies`.
 4. Ouvrir une PR vers `develop` et corriger jusqu'à ce que le check PR-Validation soit vert.
 
 Pour contrôler le dépôt en local, à partir d'un clone du socle :
 
 ```bash
-python ../its-dp-fab-cicd-common/tools/deploy.py validate --repo .
+python ../its-dp-fab-cicd-common/CICD/tools/deploy.py validate --repo .
 ```
 
 ## Ce qui ne doit pas figurer dans ce dépôt
 
 | Élément | Pourquoi |
 |---|---|
-| `.github/workflows/CI.yml`, `.github/workflows/CD.yml` | Remplacés par `CI.yml`, `CD.yml` et `PR-Validation.yml` à la racine (pipelines Azure DevOps) |
-| `deployment/deploy.py` | Remplacé par `tools/deploy.py` du socle (l'ancien script contenait des ID en dur) |
-| `deployment/check_connection.py` (si présent) | Contrôle des connexions intégré au pré-vol du socle |
+| `.github/workflows/CI.yml`, `.github/workflows/CD.yml` | Remplacés par `CI.yml`, `CD.yml` et `PR-Validation.yml` sous `CICD/pipelines/` (pipelines Azure DevOps) |
+| `deploy.py` dans `deployment/` ou `CICD/deployment/` | Remplacé par `CICD/tools/deploy.py` du socle (l'ancien script contenait des ID en dur) |
+| `check_connection.py` dans `deployment/` ou `CICD/deployment/` (si présent) | Contrôle des connexions intégré au pré-vol du socle |
 | Items à la racine du dépôt | Déplacés sous `fabric/` |
 
 ## Avant le premier déploiement
 
-- [ ] Remplacer les marqueurs de `CD.yml` et `PR-Validation.yml` :
+- [ ] Remplacer les marqueurs de `CICD/pipelines/CD.yml` et `CICD/pipelines/PR-Validation.yml` :
   - `__A_RELEVER__` : organisation et service connection GitHub ;
   - `__A_CONFIRMER_SERVICE_CONNECTION_ARM_<ENV>__` : une service connection Azure Resource Manager distincte par environnement, créée par Ops en fédération d'identité, autorisée à lire les 3 secrets de son environnement dans le coffre unique `frfrkvdevdp0001`.
-- [ ] Déplacer les items sous `fabric/` et passer `repository_directory` à `"../fabric"` **dans la même PR**. Rediriger ensuite la Git Integration du workspace DEV vers le dossier `fabric`.
+- [x] `repository_directory` à `"../../fabric"` dans `CICD/deployment/config.yml`.
+- [ ] Déplacer les items sous `fabric/` : il ne contient aujourd'hui que `test.md`, la validation échoue en `STRUCT_NO_ITEMS`. Rediriger ensuite la Git Integration du workspace DEV vers le dossier `fabric`.
 - [ ] Lancer `deploy.py validate` sur la branche réelle. Décisions du 22/10/2026 : le lien `pl_sequence_start` → `log_sequence_start` est confirmé ; reste à confirmer `lh_storage`, cible du raccourci.
 - [x] Noms des workspaces Framework PPR et PRD confirmés le 22/10/2026 : `FR - DP - PPR - FAB - Framework - MANAGED`, `FR - DP - PRD - FAB - Framework - MANAGED`.
 - [ ] Passer `inventory_status` à `validated` dans une PR revue.
