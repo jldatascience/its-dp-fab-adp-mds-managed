@@ -2,7 +2,7 @@
 
 Dépôt GitHub des items Microsoft Fabric du workspace **ADP MDS**, et de leur configuration de déploiement.
 
-Ce dépôt ne contient **aucun code de déploiement**. Il décrit *quoi* déployer et *où*. La logique (contrôles, publication, vérification, rapport) se trouve dans le dépôt socle commun `its-dp-fab-cicd-common`, appelé par le tag `v1.4.1`.
+Ce dépôt ne contient **aucun code de déploiement**. Il décrit *quoi* déployer et *où*. La logique (contrôles, publication, vérification, rapport) se trouve dans le dépôt socle commun `its-dp-fab-cicd-common`, appelé par le tag `v1.5.0`.
 
 | Rubrique | Valeur |
 |---|---|
@@ -10,7 +10,7 @@ Ce dépôt ne contient **aucun code de déploiement**. Il décrit *quoi* déploy
 | Workspaces | `FR - DP - <ENV> - FAB - ADP - MDS - MANAGED` (DEV, ITG, PPR, PRD) |
 | Branches | `develop` (par défaut) · `release/*` · `main` |
 | Pipelines Azure DevOps | CI : `FabricCI` · CD : à créer depuis `CICD/pipelines/CD.yml` · validation de PR : à créer depuis `CICD/pipelines/PR-Validation.yml` |
-| Socle commun | `its-dp-fab-cicd-common`, tag `v1.4.1` |
+| Socle commun | `its-dp-fab-cicd-common`, tag `v1.5.0` |
 | Statut d'inventaire | `pending` : la CD refuse toute publication tant que l'inventaire n'est pas validé sur la branche réelle |
 
 ## Dépendances
